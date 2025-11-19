@@ -1,5 +1,6 @@
 (ns carteirafront.core
-  (:gen-class))
+  (:gen-class)
+  )
 
 (defn menu []
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
@@ -10,7 +11,7 @@
   (println "2 - Comprar acao")
   (println "3 - Vender acao")
   (println "4 - Exibir extrato")
-  (println "5 - Exibir saldo\n") 
+  (println "5 - Exibir saldo\n")
 
   (let
    [opcao (read)]
