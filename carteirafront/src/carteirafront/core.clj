@@ -1,6 +1,31 @@
 (ns carteirafront.core
-  (:gen-class)
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as http-client]
+   [clojure.pprint :refer [pprint]])
+  (:gen-class))
+
+(def APIBASEURL "http://localhost:3002")
+
+(defn urlCreator [operador symbol]
+  (str APIBASEURL operador symbol)
   )
+
+(defn consultarAcao [symbol]
+  (json/parse-string (:body (http-client/get (urlCreator "/acao/" symbol))) true))
+
+(defn imprimirDesrealização[json]
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (pprint json)
+  )
+
+(defn consultarAcao-MENU []
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "=+= Digite a acao que deseja consultar: =+=")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+  (imprimirDesrealização (consultarAcao (read)))
+  )
+
 
 (defn menu []
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
@@ -16,8 +41,7 @@
   (let
    [opcao (read)]
     (cond
-      (= opcao 0) (println "0")
-      ;(= opcao 1) (consultar)
+      (= opcao 1) (consultarAcao-MENU)
       ;(= opcao 2) (comprar)
       ;(= opcao 3) (vender)
       ;(= opcao 4) (exibir-extrato)
