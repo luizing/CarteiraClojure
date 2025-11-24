@@ -2,6 +2,7 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [cheshire.core :as json]
+            [clj-http.client :as http-client]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]))
 
 ;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
@@ -13,8 +14,8 @@
         linkConection "&apikey="
         APIKEY APIKEY
         requestLink (str baseUrl symbol linkConection APIKEY)]
-    requestLink
-    ))
+    
+    (http-client/get requestLink)))
 
   
 (defroutes app-routes
