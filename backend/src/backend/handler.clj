@@ -4,6 +4,7 @@
             [cheshire.core :as json]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]))
 
+;;https://www.alphavantage.co/query?function=MARKET_STATUS&apikey=demo
 (def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
 
 (defn consultaAcao [symbol]
@@ -15,7 +16,7 @@
   (GET "/" [] "Hello World")
 
   ;"Faz a requisição para API externa e busca os dados da ação enviadas via parametros da url ou corpo da requisição ou link"
-  (GET "/acao" [] (consultaAcao "PET3R"))
+  (GET "/acao/:symbol" [symbol] (consultaAcao symbol))
   (POST "/compra/acao" [] "Faz o registro de uma nova ação na carteira do usuario - Checa os dados da ação naquele momento")
   (POST "/vende/acao" [] "Faz o registro da venda de uma ação na carteira do usuario - Adiciona os fundos a carteira e remove a ação da lista de ações")
   (GET "/extrato" [] "Retorna o registro de compras e vendas em determinado período (enviado na requisição? enviar todos os registros divididos em períodos? dos ultimos x meses?)")
