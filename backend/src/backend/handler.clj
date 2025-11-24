@@ -4,14 +4,19 @@
             [cheshire.core :as json]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]))
 
-;;https://www.alphavantage.co/query?function=MARKET_STATUS&apikey=demo
+;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
 (def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
 
 (defn consultaAcao [symbol]
-  (str "dados da acao: " symbol )
-  
-  )
+  (let [baseUrl "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="
+        symbol (clojure.string/upper-case symbol)
+        linkConection "&apikey="
+        APIKEY APIKEY
+        requestLink (str baseUrl symbol linkConection APIKEY)]
+    requestLink
+    ))
 
+  
 (defroutes app-routes
   (GET "/" [] "Hello World")
 
