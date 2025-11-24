@@ -8,14 +8,19 @@
 ;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
 (def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
 
-(defn consultaAcao [symbol]
+(defn urlCreator [symbol]
   (let [baseUrl "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="
         symbol (clojure.string/upper-case symbol)
         linkConection "&apikey="
-        APIKEY APIKEY
         requestLink (str baseUrl symbol linkConection APIKEY)]
-    
-    (http-client/get requestLink)))
+    requestLink
+  ))
+
+
+;; No momento retorna o json puro, pode ser feito algum tratamento ainda no back, ou, posso deixar para o front.
+(defn consultaAcao [symbol]
+  (let [url (urlCreator symbol)]
+    (http-client/get url)))
 
   
 (defroutes app-routes
