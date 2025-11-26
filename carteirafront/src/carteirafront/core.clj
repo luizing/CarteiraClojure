@@ -5,26 +5,54 @@
    [clojure.pprint :refer [pprint]])
   (:gen-class))
 
-(def APIBASEURL "http://localhost:3002")
 
-(defn urlCreator [operador symbol]
-  (str APIBASEURL operador symbol)
-  )
+;;Variaveis
+(def APIBASEURL "http://localhost:3000") ;;mudar para .env
 
-(defn consultarAcao [symbol]
-  (json/parse-string (:body (http-client/get (urlCreator "/acao/" symbol))) true))
-
-(defn imprimirDesrealização[json]
+;;Common
+(defn imprimirDesrealização [json]
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-  (pprint json)
-  )
+  (pprint json))
 
+;;"controller"
+(defn consultarAcao [symbol]
+  (json/parse-string (:body (http-client/get (str APIBASEURL "/acao/" symbol))) true))
+
+(defn comprarAcao [symbol qtd]
+  (http-client/post (str APIBASEURL "/compra") {:body (json/encode {:symbol symbol
+                                                                    :quantidade qtd})}))
+
+(defn venderAcao [symbol qtd]
+  (http-client/post (str APIBASEURL "vende") {:body (json/encode {:symbol symbol 
+                                                                  :quantidade qtd})}))
+(defn exibirExtrato []
+  (http-client/get (str APIBASEURL "extrato")))
+
+(defn exibirSaldo []
+  (http-client/get (str APIBASEURL "saldo")))
+
+;;Menus
 (defn consultarAcao-MENU []
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
   (println "=+= Digite a acao que deseja consultar: =+=")
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
-  (imprimirDesrealização (consultarAcao (read)))
-  )
+  (imprimirDesrealização (consultarAcao (read))))
+
+(defn comprarAcao-MENU []
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "=+= Digite a acao que deseja comprar, depois a quantidade: =+=")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+  (let [acao (read)
+        qtd (read)]
+    (comprarAcao acao qtd)))
+
+(defn venderAcao-MENU []
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "=+= Digite a acao que deseja vender, depois a quantidade: =+=")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+  (let [acao (read)
+        qtd (read)]
+    (venderAcao acao qtd)))
 
 
 (defn menu []
@@ -42,14 +70,13 @@
    [opcao (read)]
     (cond
       (= opcao 1) (consultarAcao-MENU)
-      ;(= opcao 2) (comprar)
-      ;(= opcao 3) (vender)
-      ;(= opcao 4) (exibir-extrato)
-      ;(= opcao 5) (exibir-saldo)
+      (= opcao 2) (comprarAcao-MENU)
+      (= opcao 3) (venderAcao-MENU)
+      (= opcao 4) (exibirExtrato)
+      (= opcao 5) (exibirSaldo)
       :else (println "..."))
     (recur)))
 
 (defn -main
   [& args]
-  (menu)
-  )
+  (menu))
