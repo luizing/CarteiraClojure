@@ -1,0 +1,48 @@
+# Arquivos e diretórios gerados pelo Leiningen / Clojure CLI
+.lein-failures
+.repl-history
+target/
+classes/
+checkouts/
+
+# Configuração e caches do Leiningen / Clojure CLI
+.dir-locals.el
+.cpcache
+.cpcache-lock
+.cpcache-temp
+.local/
+deps.edn.tmp
+
+# Caches de dependências
+.m2/
+.clj-kondo/.cache/
+
+# Configurações do nREPL / CIDER / Calva
+.nrepl-port
+.nrepl-checksum
+.nrepl-metadata
+.nrepl-last-start
+
+# IDE / Editores (Comuns no ecossistema Clojure)
+.idea/
+.vscode/
+.calva/
+*~
+\#*\#
+*.swp
+*.swo
+*.tmp
+*.bak
+
+# Node.js (Comum para ferramentas ClojureScript ou front-end)
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.npm/
+.yarn/
+
+# ClojureScript Específico (Se houver)
+out/
+resources/public/js/compiled/
+.shadow-cljs/
