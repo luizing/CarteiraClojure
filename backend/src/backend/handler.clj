@@ -21,8 +21,16 @@
 
 ;; No momento retorna o json puro, pode ser feito algum tratamento ainda no back, ou, posso deixar para o front.
 (defn consultaAcao [symbol]
-  (let [url (urlCreator symbol)]
-    (http-client/get url)))
+  (let [url (urlCreator symbol)
+        response (http-client/get url {:as :json})
+
+        quote (get-in response [:body (keyword "Global Quote")])
+
+        
+        price (get quote (keyword "05. price"))
+  ]
+  (str "Acao: " price)
+    ))
 
   
 (defroutes app-routes
