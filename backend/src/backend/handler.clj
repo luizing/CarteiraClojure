@@ -13,13 +13,13 @@
         symbol (clojure.string/upper-case symbol)
         linkConection "&apikey="
         sufixo ".SAO"
-        requestLink (str baseUrl symbol linkConection APIKEY sufixo) 
+        requestLink (str baseUrl symbol sufixo linkConection APIKEY ) 
         ]
+    (println requestLink)
     requestLink
     ))
 
 
-;; No momento retorna o json puro, pode ser feito algum tratamento ainda no back, ou, posso deixar para o front.
 (defn consultaAcao [symbol]
   (let [url (urlCreator symbol)
         response (http-client/get url {:as :json})
@@ -31,6 +31,8 @@
         high (get quote (keyword "03. high"))
         low (get quote (keyword "04. low"))
         price (get quote (keyword "05. price"))]
+    
+    (println response)
 
     (json/generate-string
      {:acao      symb
