@@ -26,11 +26,18 @@
 
         quote (get-in response [:body (keyword "Global Quote")])
 
-        
-        price (get quote (keyword "05. price"))
-  ]
-  (str "Acao: " price)
-    ))
+        symb (get quote (keyword "01. symbol"))
+        open (get quote (keyword "02. open"))
+        high (get quote (keyword "03. high"))
+        low (get quote (keyword "04. low"))
+        price (get quote (keyword "05. price"))]
+
+    (json/generate-string
+     {:acao      symb
+      :abertura  open
+      :alta      high
+      :baixa     low
+      :preco     price})))
 
   
 (defroutes app-routes

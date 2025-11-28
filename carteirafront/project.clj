@@ -6,7 +6,9 @@
   :dependencies [[org.clojure/clojure "1.12.2"]
                  [clj-http "3.9.1"]
                  [org.clojure/tools.cli "0.4.1"] 
-                 [cheshire "5.8.1"]]
+                 [cheshire "5.8.1"]
+                 [environ "1.2.0"]
+                 ]
   :main ^:skip-aot carteirafront.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
