@@ -17,86 +17,132 @@
   (println "Alta:"     (nth vetor 2))
   (println "Baixa:"    (nth vetor 3))
   (println "Preco:"    (nth vetor 4))
-  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
-  )
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+\n"))
+
+(defn imprimirCompra [vetor]
+  (println "\n+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "Acao:"     (nth vetor 0))
+  (println "Quantidade comprada:" (nth vetor 1))
+  (println "Preco unitario:"     (nth vetor 2))
+  (println "Preco total:"    (nth vetor 3))
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+\n"))
+
+(defn imprimirVenda [vetor]
+  (println "\n+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "Acao:"     (nth vetor 0))
+  (println "Quantidade vendida:" (nth vetor 1))
+  (println "Preco unitario:"     (nth vetor 2))
+  (println "Preco total:"    (nth vetor 3))
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+\n"))
 
 ;;"controller"
 (defn consultarAcao [symbol]
   (let [url (str APIBASEURL "/acao/" symbol)
         response (http-client/get url {:as :json})
 
-
         acao (get-in response [:body :acao])
         abertura (get-in response [:body :abertura])
         alta (get-in response [:body :alta])
         baixa (get-in response [:body :baixa])
-        preco (get-in response [:body :preco])
-        ]
-    [acao abertura alta baixa preco]
-    )
-)
+        preco (get-in response [:body :preco])]
+    [acao abertura alta baixa preco]))
 
 
-  (defn comprarAcao [symbol qtd]
-    (http-client/post (str APIBASEURL "/compra") {:body (json/encode {:symbol symbol
-                                                                      :quantidade qtd})}))
+(defn comprarAcao [symbol qtd]
+  (println "comprando " qtd " de " symbol "...")
+  (http-client/post (str APIBASEURL "/compra")
+                    {:headers {"Content-Type" "application/json"}
+                     :as :json
+                     :body (json/generate-string {:symbol symbol
+                                                  :quantidade qtd})}))
 
-  (defn venderAcao [symbol qtd]
-    (http-client/post (str APIBASEURL "vende") {:body (json/encode {:symbol symbol
-                                                                    :quantidade qtd})}))
-  (defn exibirExtrato []
-    (http-client/get (str APIBASEURL "extrato")))
+(defn venderAcao [symbol qtd]
+  (println "vendendo " qtd " de " symbol "...")
+  (http-client/post (str APIBASEURL "/vende")
+                    {:headers {"Content-Type" "application/json"}
+                     :as :json
+                     :body (json/generate-string {:symbol symbol
+                                                  :quantidade qtd})}))
 
-  (defn exibirSaldo []
-    (http-client/get (str APIBASEURL "saldo")))
-
-  ;;Menus
-  (defn consultarAcao-MENU []
-    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-    (println "=+= Digite a acao que deseja consultar: =+=")
-    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
-    (imprimirConsulta (consultarAcao (read))))
-
-  (defn comprarAcao-MENU []
-    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-    (println "=+= Digite a acao que deseja comprar, depois a quantidade: =+=")
-    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
-    (let [acao (read)
-          qtd (read)]
-      (comprarAcao acao qtd)))
-
-  (defn venderAcao-MENU []
-    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-    (println "=+= Digite a acao que deseja vender, depois a quantidade: =+=")
-    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
-    (let [acao (read)
-          qtd (read)]
-      (venderAcao acao qtd)))
+(defn processaCompra [json]
+  (let [response json
+        acao (get-in response [:body :acao])
+        quantidade (get-in response [:body :quantidade])
+        preco-unitario (get-in response [:body :preco-unitario])
+        total (get-in response [:body :total])
+        preco (get-in response [:body :preco])]
+    [acao quantidade preco-unitario total preco]))
 
 
-  (defn menu []
-    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-    (println "=+= Gerenciador de Carteira de Acoes =+=")
-    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-    (println "\nDigite a opcao desejada:")
-    (println "1 - Consultar acao")
-    (println "2 - Comprar acao")
-    (println "3 - Vender acao")
-    (println "4 - Exibir extrato")
-    (println "5 - Exibir saldo\n")
+(defn exibirExtrato [inicio fim]
+   (http-client/post (str APIBASEURL "/extrato")
+                     {:headers {"Content-Type" "application/json"}
+                      :as :json
+                      :body (json/generate-string {:inicio inicio
+                                                  :fim fim})}))
 
-    (let
-     [opcao (read)]
-      (cond
-        (= opcao 1) (consultarAcao-MENU)
-        (= opcao 2) (comprarAcao-MENU)
-        (= opcao 3) (venderAcao-MENU)
-        (= opcao 4) (exibirExtrato)
-        (= opcao 5) (exibirSaldo)
-        (= opcao 6) (println (System/getenv "API_URL"))
-        :else (println "..."))
-      (recur)))
+(defn exibirSaldo []
+  (http-client/get (str APIBASEURL "saldo")))
 
-  (defn -main
-    [& args]
-    (menu))
+;;Menus
+(defn consultarAcao-MENU []
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "=+= Digite a acao que deseja consultar: =+=")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+  (imprimirConsulta (consultarAcao (read))))
+
+(defn comprarAcao-MENU []
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "=+= Digite a acao que deseja comprar, depois a quantidade: =+=")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+  (let [acao (read)
+        qtd (read)]
+    (imprimirCompra
+     (processaCompra
+      (comprarAcao acao qtd)))))
+
+(defn venderAcao-MENU []
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "=+= Digite a acao que deseja vender, depois a quantidade: =+=")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+  (let [acao (read)
+        qtd (read)]
+    (imprimirVenda
+       (processaCompra
+        (venderAcao acao qtd)))))
+
+(defn exibirExtrato-MENU []
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "=+= Digite o periodo que voce deseja no extrato, primeiro o dia inicial, depois o final: =+=")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+  (let [inicio (read)
+        final (read)]
+    (exibirExtrato inicio final)
+    ))
+
+
+(defn menu []
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "=+= Gerenciador de Carteira de Acoes =+=")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "\nDigite a opcao desejada:")
+  (println "1 - Consultar acao")
+  (println "2 - Comprar acao")
+  (println "3 - Vender acao")
+  (println "4 - Exibir extrato")
+  (println "5 - Exibir saldo\n")
+
+  (let
+   [opcao (read)]
+    (cond
+      (= opcao 1) (consultarAcao-MENU)
+      (= opcao 2) (comprarAcao-MENU)
+      (= opcao 3) (venderAcao-MENU)
+      (= opcao 4) (exibirExtrato-MENU)
+      (= opcao 5) (exibirSaldo)
+      :else (println "..."))
+    (recur)))
+
+(defn -main
+  [& args]
+  (menu))
