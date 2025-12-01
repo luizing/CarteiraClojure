@@ -64,7 +64,7 @@
                      :body (json/generate-string {:symbol symbol
                                                   :quantidade qtd})}))
 
-(defn processaCompra [json]
+(defn processaTransacao [json]
   (let [response json
         acao (get-in response [:body :acao])
         quantidade (get-in response [:body :quantidade])
@@ -73,6 +73,16 @@
         preco (get-in response [:body :preco])]
     [acao quantidade preco-unitario total preco]))
 
+(defn processaExtrato [json]
+  (let [response json
+         str (get-in response [:body ])]
+
+     str))
+ 
+(defn processaSaldo [json]
+  (let [response json
+        str (get-in response [:body])]
+    str))
 
 (defn exibirExtrato [inicio fim]
    (http-client/post (str APIBASEURL "/extrato")
@@ -82,7 +92,7 @@
                                                   :fim fim})}))
 
 (defn exibirSaldo []
-  (http-client/get (str APIBASEURL "saldo")))
+  (http-client/get (str APIBASEURL "/saldo")))
 
 ;;Menus
 (defn consultarAcao-MENU []
@@ -98,7 +108,7 @@
   (let [acao (read)
         qtd (read)]
     (imprimirCompra
-     (processaCompra
+     (processaTransacao
       (comprarAcao acao qtd)))))
 
 (defn venderAcao-MENU []
@@ -108,7 +118,7 @@
   (let [acao (read)
         qtd (read)]
     (imprimirVenda
-       (processaCompra
+       (processaTransacao
         (venderAcao acao qtd)))))
 
 (defn exibirExtrato-MENU []
@@ -117,8 +127,9 @@
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
   (let [inicio (read)
         final (read)]
-    (exibirExtrato inicio final)
-    ))
+    (println
+     (processaExtrato
+      (exibirExtrato inicio final)))))
 
 
 (defn menu []
@@ -139,7 +150,7 @@
       (= opcao 2) (comprarAcao-MENU)
       (= opcao 3) (venderAcao-MENU)
       (= opcao 4) (exibirExtrato-MENU)
-      (= opcao 5) (exibirSaldo)
+      (= opcao 5) (println(processaSaldo(exibirSaldo)))
       :else (println "..."))
     (recur)))
 

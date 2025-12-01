@@ -4,22 +4,19 @@
             [cheshire.core :as json]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-body]]
-            [clj-http.client :as http-client]
-            ))
+            [clj-http.client :as http-client]))
 
 ;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
-;;(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
-(def APIKEY "demo")
+(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
+;;(def APIKEY "demo")
 
 (defn urlCreator [symbol]
   (let [baseUrl "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="
         symbol (clojure.string/upper-case symbol)
         linkConection "&apikey="
-        sufixo ""
-        requestLink (str baseUrl symbol sufixo linkConection APIKEY ) 
-        ] 
-    requestLink
-    ))
+        sufixo ".SAO"
+        requestLink (str baseUrl symbol sufixo linkConection APIKEY)]
+    requestLink))
 
 (defn retornaJson [map]
   (json/generate-string map))
@@ -43,17 +40,13 @@
      :baixa     low
      :preco     price}))
 
-(defn compraAcao [symbol qtd] 
+(defn compraAcao [symbol qtd]
   (let [precoUnitario (Double/parseDouble (:preco (consultaAcao symbol)))
         corpo {:acao symbol
                :quantidade qtd
                :preco-unitario precoUnitario
-               :total (format "%.2f" (* qtd (double precoUnitario)))
-               }
-        ]
-    (retornaJson corpo)
-   )
-)
+               :total (format "%.2f" (* qtd (double precoUnitario)))}]
+    (retornaJson corpo)))
 
 (defn vendeAcao [symbol qtd]
   (let [precoUnitario (Double/parseDouble (:preco (consultaAcao symbol)))
@@ -63,29 +56,35 @@
                :total (format "%.2f" (* qtd (double precoUnitario)))}]
     (retornaJson corpo)))
 
- 
-  
-(defroutes app-routes
-  (GET "/" [] "Hello World")
+(defn consultaExtrato [inicio fim]
+  (retornaJson (str "Extrato do periodo de " inicio " a " fim ":\n"
+       "100 PETR4 31$ 200 6200"))
+  )
 
-  (GET "/acao/:symbol" [symbol] (retornaJson (consultaAcao symbol)))
+  (defroutes app-routes
+    (GET "/" [] "Carteira de Ações - Programação Funcional")
 
-  (POST "/compra" requisicao (let [{:keys [symbol quantidade]} (:body requisicao)]
-                               (println "symbol =" symbol "quantidade =" quantidade)
-                               {:status 200
-                                :body (compraAcao symbol quantidade)}))
+    (GET "/acao/:symbol" [symbol] (retornaJson (consultaAcao symbol)))
 
-  (POST "/vende" requisicao (let [{:keys [symbol quantidade]} (:body requisicao)]
-                               (println "symbol =" symbol "quantidade =" quantidade)
-                               {:status 200
-                                :body (vendeAcao symbol quantidade)}))
-  
-  (GET "/extrato" [] (compraAcao "ibm" 200))
-  (GET "/saldo" [] {:headers {"Content-Type" "application/json; charset=utf-8"}
-                    :body (json/generate-string "Obter saldo da carteira")})
-  (route/not-found "Not Found"))
+    (POST "/compra" requisicao (let [{:keys [symbol quantidade]} (:body requisicao)]
+                                 (println "Compra => " symbol " " quantidade)
+                                 {:status 200
+                                  :body (compraAcao symbol quantidade)}))
 
-(def app
-  (-> app-routes
-      (wrap-json-body {:keywords? true})
-      (wrap-defaults api-defaults)))
+    (POST "/vende" requisicao (let [{:keys [symbol quantidade]} (:body requisicao)]
+                                (println "Venda => " symbol " " quantidade)
+                                {:status 200
+                                 :body (vendeAcao symbol quantidade)}))
+
+    (POST "/extrato" requisicao (let [{:keys [inicio fim]} (:body requisicao)]
+                                  (println "Extrato => " inicio " - " fim)
+                                  {:status 200
+                                   :body (consultaExtrato inicio fim)}))
+    (GET "/saldo" [] {:headers {"Content-Type" "application/json; charset=utf-8"}
+                      :body (json/generate-string "Obter saldo da carteira")})
+    (route/not-found "Not Found"))
+
+  (def app
+    (-> app-routes
+        (wrap-json-body {:keywords? true})
+        (wrap-defaults api-defaults)))
