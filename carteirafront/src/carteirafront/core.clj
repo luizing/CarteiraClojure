@@ -102,31 +102,38 @@
   (imprimirConsulta (consultarAcao (read))))
 
 (defn comprarAcao-MENU []
-  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-  (println "=+= Digite a acao que deseja comprar, depois a quantidade: =+=")
-  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+  (println "Digite a acao que deseja comprar: ")
   (let [acao (read)
+        _ (println "Digite a quantidade: ")
         qtd (read)]
+    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
     (imprimirCompra
      (processaTransacao
       (comprarAcao acao qtd)))))
 
 (defn venderAcao-MENU []
-  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-  (println "=+= Digite a acao que deseja vender, depois a quantidade: =+=")
-  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
-  (let [acao (read)
-        qtd (read)]
-    (imprimirVenda
-       (processaTransacao
-        (venderAcao acao qtd)))))
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+  (println "Digite a acao que deseja vender: ")
+(let [acao (read)
+      _ (println "Digite a quantidade: ")
+      qtd (read)
+      ]
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+  (imprimirVenda
+   (processaTransacao
+    (venderAcao acao qtd)))))
 
 (defn exibirExtrato-MENU []
-  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-  (println "=+= Digite o periodo que voce deseja no extrato, primeiro o dia inicial, depois o final: =+=")
-  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+  (println "=+= Para qual periodo deseja verificar o extrato?: =+=")
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+  
+  (println "Digite o inicio: ")
   (let [inicio (read)
+        _ (println "Digite o fim: ")
         final (read)]
+    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
     (println
      (processaExtrato
       (exibirExtrato inicio final)))))

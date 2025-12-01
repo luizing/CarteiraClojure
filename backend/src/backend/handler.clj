@@ -7,14 +7,15 @@
             [clj-http.client :as http-client]))
 
 ;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
-(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
-;;(def APIKEY "demo")
+;;(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
+(def APIKEY "demo")
 
 (defn urlCreator [symbol]
   (let [baseUrl "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="
         symbol (clojure.string/upper-case symbol)
         linkConection "&apikey="
-        sufixo ".SAO"
+        ;;sufixo ".SAO"
+        sufixo ""
         requestLink (str baseUrl symbol sufixo linkConection APIKEY)]
     requestLink))
 
