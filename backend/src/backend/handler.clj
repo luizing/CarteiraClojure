@@ -4,7 +4,33 @@
             [cheshire.core :as json]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-body]]
-            [clj-http.client :as http-client]))
+            [clj-http.client :as http-client]
+            ))
+
+
+(defn now []
+  (new java.util.Date))
+;;Banco de dados
+
+(def bd (atom ()))
+
+;;add data
+(defn addCompra [compra]
+  (let [acao (:acao compra)
+        quantidade (:quantidade compra)
+        preco (:preco-unitario compra)]
+    (swap! bd conj {:data (now)
+                    :acao acao
+                    :quantidade quantidade
+                    :preco preco})))
+
+
+
+
+
+
+
+
 
 ;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
 ;;(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
@@ -47,6 +73,7 @@
                :quantidade qtd
                :preco-unitario precoUnitario
                :total (format "%.2f" (* qtd (double precoUnitario)))}]
+    (addCompra corpo)
     (retornaJson corpo)))
 
 (defn vendeAcao [symbol qtd]
@@ -57,10 +84,8 @@
                :total (format "%.2f" (* qtd (double precoUnitario)))}]
     (retornaJson corpo)))
 
-(defn consultaExtrato [inicio fim]
-  (retornaJson (str "Extrato do periodo de " inicio " a " fim ":\n"
-       "100 PETR4 31$ 200 6200"))
-  )
+(defn consultaExtrato []
+  (println @bd))
 
   (defroutes app-routes
     (GET "/" [] "Carteira de Ações - Programação Funcional")
@@ -80,9 +105,10 @@
     (POST "/extrato" requisicao (let [{:keys [inicio fim]} (:body requisicao)]
                                   (println "Extrato => " inicio " - " fim)
                                   {:status 200
-                                   :body (consultaExtrato inicio fim)}))
+                                   :body (consultaExtrato)}))
     (GET "/saldo" [] {:headers {"Content-Type" "application/json; charset=utf-8"}
                       :body (json/generate-string "Obter saldo da carteira")})
+    
     (route/not-found "Not Found"))
 
   (def app
