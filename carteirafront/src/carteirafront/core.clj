@@ -10,6 +10,18 @@
 (def APIBASEURL "http://localhost:3000") ;;mudar para .env
 
 ;;Common
+(defn respostaValida? [response]
+  (and
+   (some? response)
+
+   (map? response)
+   (some? (:body response))
+
+   (not (string? (:body response)))
+
+   (not (contains? (:body response) :mensagem))
+   (not= "erro" (:status (:body response)))))
+
 (defn imprimirConsulta [vetor]
   (println "\n+=+=+=+=+=+=+=+=+=+=+=+=+=+")
   (println "Acao:"     (nth vetor 0))
@@ -115,23 +127,30 @@
         ___ (read-line)
         data (read-line)]
     (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
-    (imprimirCompra
-     (processaTransacao
-      (comprarAcao acao qtd data)))))
+
+    (let [resp (comprarAcao acao qtd data)]
+      (if (respostaValida? resp)
+        (imprimirCompra (processaTransacao resp))
+        (println "Erro ao realizar compra:" (:body resp))))))
+
 
 (defn venderAcao-MENU []
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
   (println "Digite a acao que deseja vender: ")
-(let [acao (read)
-      _ (println "Digite a quantidade: ")
-      qtd (read)
-      __ (println "Digite a data (yyyy-mm-dd): ")
-      ___ (read-line)
-      data (read-line)]
-  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
-  (imprimirVenda
-   (processaTransacao
-    (venderAcao acao qtd data)))))
+
+  (let [acao (read)
+        _ (println "Digite a quantidade: ")
+        qtd (read)
+        __ (println "Digite a data (yyyy-mm-dd): ")
+        ___ (read-line)
+        data (read-line)]
+    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
+    
+    (let [resp (venderAcao acao qtd data)]
+      (if (respostaValida? resp)
+        (imprimirVenda (processaTransacao resp))
+        (println "Erro ao realizar venda:" (:body resp))))))
+
 
 (defn exibirExtrato-MENU []
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
