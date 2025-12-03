@@ -7,8 +7,6 @@
             [clj-http.client :as http-client]))
 
 
-(defn now []
-  (new java.util.Date))
 ;;Banco de dados
 
 (def registro (atom ()))
