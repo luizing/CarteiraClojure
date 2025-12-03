@@ -30,10 +30,11 @@
 
 (defn imprimirVenda [vetor]
   (println "\n+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-  (println "Acao:"     (nth vetor 0))
-  (println "Quantidade vendida:" (nth vetor 1))
-  (println "Preco unitario:"     (nth vetor 2))
-  (println "Preco total:"    (nth vetor 3))
+  (println "Data:"     (nth vetor 0))
+  (println "Acao:"     (nth vetor 1))
+  (println "Quantidade vendida:" (nth vetor 2))
+  (println "Preco unitario:"     (nth vetor 3))
+  (println "Preco total:"    (nth vetor 4))
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+\n"))
 
 ;;"controller"
@@ -58,13 +59,14 @@
                                                   :quantidade qtd
                                                   :data data})}))
 
-(defn venderAcao [symbol qtd]
-  (println "vendendo " qtd " de " symbol "...")
+(defn venderAcao [symbol qtd data]
+  (println "vendendo " qtd " de " symbol " no dia " data "...")
   (http-client/post (str APIBASEURL "/vende")
                     {:headers {"Content-Type" "application/json"}
                      :as :json
                      :body (json/generate-string {:symbol symbol
-                                                  :quantidade qtd})}))
+                                                  :quantidade qtd
+                                                  :data data})}))
 
 (defn processaTransacao [json]
   (let [response json 
@@ -123,11 +125,13 @@
 (let [acao (read)
       _ (println "Digite a quantidade: ")
       qtd (read)
-      ]
+      __ (println "Digite a data (yyyy-mm-dd): ")
+      ___ (read-line)
+      data (read-line)]
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
   (imprimirVenda
    (processaTransacao
-    (venderAcao acao qtd)))))
+    (venderAcao acao qtd data)))))
 
 (defn exibirExtrato-MENU []
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")

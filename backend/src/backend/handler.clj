@@ -4,8 +4,7 @@
             [cheshire.core :as json]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-body]]
-            [clj-http.client :as http-client]
-            ))
+            [clj-http.client :as http-client]))
 
 
 (defn now []
@@ -35,10 +34,8 @@
 ;;(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
 (def APIKEY "demo")
 
-(def APIPAST "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&apikey=demo")
-
 (defn urlCreator [symbol function]
-  (let [baseUrl "https://www.alphavantage.co/query?function=" 
+  (let [baseUrl "https://www.alphavantage.co/query?function="
         conectionF&S "&symbol="
         symbol (clojure.string/upper-case symbol)
         conectionS&A "&apikey="
@@ -70,78 +67,118 @@
      :preco     price}))
 
 (defn consultaAcaoPassado [symbol data]
-  (let [url (urlCreator symbol "TIME_SERIES_DAILY")
+  (try
+    (let [url (urlCreator symbol "TIME_SERIES_DAILY")
 
-        response (http-client/get url {:as :json})
-        series (get-in response [:body (keyword "Time Series (Daily)")])
-        pastDate (get series (keyword data))
+          response (http-client/get url {:as :json})
+          series (get-in response [:body (keyword "Time Series (Daily)")])
+          pastDate (get series (keyword data))
 
-        open (get pastDate (keyword "1. open"))
-        high (get pastDate (keyword "2. high"))
-        low (get pastDate (keyword "3. low"))
-        close (get pastDate (keyword "4. close"))
-        volume (get pastDate (keyword "5. volume"))]
+          open (get pastDate (keyword "1. open"))
+          high (get pastDate (keyword "2. high"))
+          low (get pastDate (keyword "3. low"))
+          close (get pastDate (keyword "4. close"))
+          volume (get pastDate (keyword "5. volume"))]
 
-    {:symbol symbol
-     :data data
-     :open open
-     :high high
-     :low low
-     :close close
-     :volume volume}))
+      {:symbol symbol
+       :data data
+       :open open
+       :high high
+       :low low
+       :close close
+       :volume volume})
+    (catch Exception e
+      (println "Erro ao consultar API externa:" (.getMessage e))
+      nil)))
 
 (defn compraAcao [symbol qtd data]
-  (let [precoString (:close (consultaAcaoPassado symbol data)) 
-        precoUnitario (Double/parseDouble precoString)
-        total (* qtd precoUnitario)
+  (let [historico (consultaAcaoPassado symbol data)
+        precoString (:close historico)]
 
-        corpo {:data data
-               :operacao "compra"
-               :acao symbol
-               :quantidade qtd
-               :preco-unitario precoUnitario
-               :total (format "%.2f" total)}]
-    (addRegistro corpo)
-    (retornaJson corpo)))
+    (if (or (nil? historico)
+            (nil? precoString)
+            (nil? symbol)
+            (nil? qtd)
+            (nil? data))
 
-(defn vendeAcao [symbol qtd]
-  (let [precoUnitario (Double/parseDouble (:preco (consultaAcao symbol)))
-        corpo {:acao symbol
-               :quantidade qtd
-               :preco-unitario precoUnitario
-               :total (format "%.2f" (* qtd (double precoUnitario)))}]
-    (retornaJson corpo)))
+      (retornaJson
+       {:status "erro"
+        :mensagem "Não foi possível realizar a compra. Dados inválidos ou data sem histórico."})
+
+      (let [precoUnitario (Double/parseDouble precoString)
+            total (* qtd precoUnitario)
+
+            corpo {:status "sucesso"
+                   :data data
+                   :operacao "compra"
+                   :acao symbol
+                   :quantidade qtd
+                   :preco-unitario precoUnitario
+                   :total (format "%.2f" total)}]
+
+        (addRegistro corpo)
+        (retornaJson corpo)))))
+
+
+(defn vendeAcao [symbol qtd data]
+  (let [historico (consultaAcaoPassado symbol data)
+        precoString (:close historico)]
+
+    (if (or (nil? historico)
+            (nil? precoString)
+            (nil? symbol)
+            (nil? qtd)
+            (nil? data))
+
+      (retornaJson
+       {:status "erro"
+        :mensagem "Não foi possível realizar a venda. Dados inválidos ou data sem histórico."})
+
+      (let [precoUnitario (Double/parseDouble precoString)
+            total (* qtd precoUnitario)
+
+            corpo {:status "sucesso"
+                   :data data
+                   :operacao "venda"
+                   :acao symbol
+                   :quantidade qtd
+                   :preco-unitario precoUnitario
+                   :total (format "%.2f" total)}]
+
+        (addRegistro corpo)
+        (retornaJson corpo)))))
+
 
 (defn consultaExtrato []
   (println @registro))
 
-  (defroutes app-routes
-    (GET "/" [] "Carteira de Ações - Programação Funcional")
+(defroutes app-routes
+  (GET "/" [] "Carteira de Ações - Programação Funcional")
 
-    (GET "/acao/:symbol" [symbol] (retornaJson (consultaAcao symbol)))
+  (GET "/acao/:symbol" [symbol] (retornaJson (consultaAcao symbol)))
 
-    (POST "/compra" requisicao (let [{:keys [symbol quantidade data]} (:body requisicao)]
-                                 (println "Compra => " symbol " " quantidade " em " data)
-                                 {:status 200
-                                  :body (compraAcao symbol quantidade data)}))
+  (POST "/compra" requisicao (let [{:keys [symbol quantidade data]} (:body requisicao)]
+                               (println "Compra => " symbol " " quantidade " em " data)
+                               {:status 200
+                                :body (compraAcao symbol quantidade data)}))
 
-    (POST "/vende" requisicao (let [{:keys [symbol quantidade]} (:body requisicao)]
-                                (println "Venda => " symbol " " quantidade)
+  (POST "/vende" requisicao (let [{:keys [symbol quantidade data]} (:body requisicao)]
+                              (println "Venda => " symbol " " quantidade " em " data)
+                              {:status 200
+                               :body (vendeAcao symbol quantidade data)}))
+
+  (POST "/extrato" requisicao (let [{:keys [inicio fim]} (:body requisicao)]
+                                (println "Extrato => " inicio " - " fim)
                                 {:status 200
-                                 :body (vendeAcao symbol quantidade)}))
+                                 :body (consultaExtrato)}))
+  (GET "/saldo" [] {:headers {"Content-Type" "application/json; charset=utf-8"}
+                    :body (json/generate-string "Obter saldo da carteira")})
 
-    (POST "/extrato" requisicao (let [{:keys [inicio fim]} (:body requisicao)]
-                                  (println "Extrato => " inicio " - " fim)
-                                  {:status 200
-                                   :body (consultaExtrato)}))
-    (GET "/saldo" [] {:headers {"Content-Type" "application/json; charset=utf-8"}
-                      :body (json/generate-string "Obter saldo da carteira")})
-    
-    (GET "/teste" [] (compraAcao "ibm" 20 "2025-12-02"))
-    
-    (route/not-found "Not Found"))
+  (GET "/teste" [] (compraAcao "ibm" 20 "2025-12-03"))
 
-  (def app
-    (-> app-routes
-        (wrap-json-body {:keywords? true})
-        (wrap-defaults api-defaults)))
+  (route/not-found "Not Found"))
+
+(def app
+  (-> app-routes
+      (wrap-json-body {:keywords? true})
+      (wrap-defaults api-defaults)))
