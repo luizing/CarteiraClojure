@@ -21,10 +21,11 @@
 
 (defn imprimirCompra [vetor]
   (println "\n+=+=+=+=+=+=+=+=+=+=+=+=+=+")
-  (println "Acao:"     (nth vetor 0))
-  (println "Quantidade comprada:" (nth vetor 1))
-  (println "Preco unitario:"     (nth vetor 2))
-  (println "Preco total:"    (nth vetor 3))
+  (println "Data:"     (nth vetor 0))
+  (println "Acao:"     (nth vetor 1))
+  (println "Quantidade comprada:" (nth vetor 2))
+  (println "Preco unitario:"     (nth vetor 3))
+  (println "Preco total:"    (nth vetor 4))
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+\n"))
 
 (defn imprimirVenda [vetor]
@@ -48,13 +49,14 @@
     [acao abertura alta baixa preco]))
 
 
-(defn comprarAcao [symbol qtd]
-  (println "comprando " qtd " de " symbol "...")
+(defn comprarAcao [symbol qtd data]
+  (println "comprando " qtd " de " symbol " no dia " data "...")
   (http-client/post (str APIBASEURL "/compra")
                     {:headers {"Content-Type" "application/json"}
                      :as :json
                      :body (json/generate-string {:symbol symbol
-                                                  :quantidade qtd})}))
+                                                  :quantidade qtd
+                                                  :data data})}))
 
 (defn venderAcao [symbol qtd]
   (println "vendendo " qtd " de " symbol "...")
@@ -65,13 +67,13 @@
                                                   :quantidade qtd})}))
 
 (defn processaTransacao [json]
-  (let [response json
+  (let [response json 
+        data (get-in response [:body :data])
         acao (get-in response [:body :acao])
         quantidade (get-in response [:body :quantidade])
         preco-unitario (get-in response [:body :preco-unitario])
-        total (get-in response [:body :total])
-        preco (get-in response [:body :preco])]
-    [acao quantidade preco-unitario total preco]))
+        total (get-in response [:body :total])]
+    [data acao quantidade preco-unitario total]))
 
 (defn processaExtrato [json]
   (let [response json
@@ -106,11 +108,14 @@
   (println "Digite a acao que deseja comprar: ")
   (let [acao (read)
         _ (println "Digite a quantidade: ")
-        qtd (read)]
+        qtd (read)
+        __ (println "Digite a data (yyyy-mm-dd): ")
+        ___ (read-line)
+        data (read-line)]
     (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
     (imprimirCompra
      (processaTransacao
-      (comprarAcao acao qtd)))))
+      (comprarAcao acao qtd data)))))
 
 (defn venderAcao-MENU []
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
