@@ -6,8 +6,8 @@
 
 
 
-;;Variaveis
-(def APIBASEURL "http://localhost:3000") ;;mudar para .env
+;;Variaveis de ambiente
+(def APIBASEURL "http://localhost:3000")
 
 ;;Common
 (defn respostaValida? [response]
