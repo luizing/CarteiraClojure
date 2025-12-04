@@ -116,9 +116,10 @@
   (println "=+= Digite a acao que deseja consultar: =+=")
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
   (let [resp (consultarAcao (read))]
-      (if (respostaValida? resp)
-        (imprimirConsulta resp)
-        (println "Erro ao realizar consulta: " (:body resp)))))
+    ;;(if (respostaValida? resp)
+    (imprimirConsulta resp)
+    ;;(println "Erro ao realizar consulta: " (:body resp)))
+    ))
 
 (defn comprarAcao-MENU []
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")

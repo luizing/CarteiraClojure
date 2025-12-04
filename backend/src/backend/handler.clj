@@ -11,14 +11,40 @@
 
 (def registro (atom ()))
 
+(def carteira (atom {}))
+
 ;;add data
-(defn addRegistro [compra]
-  (let [acao (:acao compra)
-        quantidade (:quantidade compra)
-        preco (:preco-unitario compra)]
-    (swap! registro conj {:acao acao
+(defn addRegistro [operacao]
+  (let [data (:data operacao)
+        tipo (:operacao operacao)
+        acao (:acao operacao)
+        quantidade (:quantidade operacao)
+        preco (:preco-unitario operacao)]
+    (swap! registro conj {:data data
+                          :tipo tipo
+                          :acao acao
                           :quantidade quantidade
                           :preco preco})))
+
+(defn isAcao? [acao]
+  (contains? @carteira acao)
+  )
+
+(defn criarAcao [acao qtd]
+  (if (isAcao? acao) (println "erro: acao ja existe")
+      (swap! carteira assoc acao qtd)))
+
+(defn salvarCompra [acao qtd]
+  (if (isAcao? acao)
+    (do
+      (swap! carteira update acao + qtd)
+      {:acao acao
+       :quantidade qtd}
+      )
+    (criarAcao acao qtd)
+    )
+  )
+
 
 
 
@@ -106,14 +132,14 @@
       (let [precoUnitario (Double/parseDouble precoString)
             total (* qtd precoUnitario)
 
-            corpo {:status "sucesso"
-                   :data data
+            corpo {:data data
                    :operacao "compra"
                    :acao symbol
                    :quantidade qtd
                    :preco-unitario precoUnitario
                    :total (format "%.2f" total)}]
 
+        (salvarCompra (:acao corpo) (:quantidade corpo) )
         (addRegistro corpo)
         (retornaJson corpo)))))
 
@@ -135,8 +161,7 @@
       (let [precoUnitario (Double/parseDouble precoString)
             total (* qtd precoUnitario)
 
-            corpo {:status "sucesso"
-                   :data data
+            corpo {:data data
                    :operacao "venda"
                    :acao symbol
                    :quantidade qtd
@@ -172,7 +197,9 @@
   (GET "/saldo" [] {:headers {"Content-Type" "application/json; charset=utf-8"}
                     :body (json/generate-string "Obter saldo da carteira")})
 
-  (GET "/teste" [] (compraAcao "ibm" 20 "2025-12-03"))
+  (GET "/testeCompra" [] (compraAcao "ibm" 20 "2025-12-03"))
+
+  (GET "/testeCarteira" [] (json/generate-string @carteira))
 
   (route/not-found "Not Found"))
 
