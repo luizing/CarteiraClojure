@@ -13,7 +13,7 @@
 
 (def carteira (atom {}))
 
-;;add data
+
 (defn addRegistro [operacao]
   (let [data (:data operacao)
         tipo (:operacao operacao)
@@ -25,6 +25,13 @@
                           :acao acao
                           :quantidade quantidade
                           :preco preco})))
+
+(defn filtrarDatas [inicio fim]
+  (filter
+   #(let [data (:data %)]
+      (and (not (neg? (compare data inicio)))
+           (not (pos? (compare data fim)))))
+   @registro))
 
 (defn isAcao? [acao]
   (contains? @carteira acao)
@@ -195,8 +202,9 @@
         (retornaJson corpo)))))
 
 
-(defn consultaExtrato []
-  (println @registro))
+(defn consultaExtrato [inicio fim]
+  (retornaJson (filtrarDatas inicio fim))
+  )
 
 (defroutes app-routes
   (GET "/" [] "Carteira de Ações - Programação Funcional")
@@ -216,13 +224,15 @@
   (POST "/extrato" requisicao (let [{:keys [inicio fim]} (:body requisicao)]
                                 (println "Extrato => " inicio " - " fim)
                                 {:status 200
-                                 :body (consultaExtrato)}))
+                                 :body (consultaExtrato inicio fim)}))
   (GET "/saldo" [] {:headers {"Content-Type" "application/json; charset=utf-8"}
                     :body (json/generate-string "Obter saldo da carteira")})
 
   (GET "/testeCompra" [] (compraAcao "ibm" 20 "2025-12-03"))
 
   (GET "/testeCarteira" [] (json/generate-string @carteira))
+
+  (GET "/testeExtrato" [] (consultaExtrato "2025-12-01" "2025-12-03"))
 
   (route/not-found "Not Found"))
 
