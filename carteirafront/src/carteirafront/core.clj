@@ -23,6 +23,7 @@
    (not= "erro" (:status (:body response)))))
 
 (defn imprimirExtrato [response]
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
   (println
    (format "%-12s %-10s %-10s %-12s %-12s"
            "DATA"
@@ -36,6 +37,19 @@
       (println
        (format "%-12s %-10s %-10s %-12d %-12.2f"
                data tipo acao quantidade preco)))))
+
+(defn imprimirSaldo [response]
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println
+   (format "%-10s %-10s"
+           "Acao"
+           "Quantidade"))
+
+  (doseq [[acao qtd] response]
+    (println
+     (format "%-12s %-12d"
+             (name acao)
+             qtd))))
 
 
 
@@ -110,8 +124,9 @@
 
   (defn processaSaldo [json]
     (let [response json
-          str (get-in response [:body])]
-      str))
+          corpo (get-in response [:body])
+          mapa (json/parse-string corpo true)]
+      mapa))
 
   (defn exibirExtrato [inicio fim]
     (http-client/post (str APIBASEURL "/extrato")
@@ -121,7 +136,8 @@
                                                     :fim fim})}))
 
   (defn exibirSaldo []
-    (http-client/get (str APIBASEURL "/saldo")))
+    (http-client/get (str APIBASEURL "/saldo"))
+    )
 
   ;;Menus
   (defn consultarAcao-MENU []
@@ -202,7 +218,9 @@
         (= opcao 2) (comprarAcao-MENU)
         (= opcao 3) (venderAcao-MENU)
         (= opcao 4) (exibirExtrato-MENU)
-        (= opcao 5) (println (processaSaldo (exibirSaldo)))
+        (= opcao 5) (imprimirSaldo
+                     (processaSaldo
+                      (exibirSaldo)))
         :else (println "..."))
       (recur)))
 

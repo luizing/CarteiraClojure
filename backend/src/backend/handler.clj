@@ -81,16 +81,16 @@
 
 
 ;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
-(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
-;;(def APIKEY "demo")
+;;(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
+(def APIKEY "demo")
 
 (defn urlCreator [symbol function]
   (let [baseUrl "https://www.alphavantage.co/query?function="
         conectionF&S "&symbol="
         symbol (clojure.string/upper-case symbol)
         conectionS&A "&apikey="
-        sufixo ".SAO"
-        ;;sufixo ""
+        ;;sufixo ".SAO"
+        sufixo ""
         requestLink (str baseUrl function conectionF&S symbol sufixo conectionS&A APIKEY)]
     requestLink))
 
@@ -206,6 +206,9 @@
   (retornaJson (filtrarDatas inicio fim))
   )
 
+(defn consultaSaldo []
+  (retornaJson @carteira))
+
 (defroutes app-routes
   (GET "/" [] "Carteira de Ações - Programação Funcional")
 
@@ -225,8 +228,7 @@
                                 (println "Extrato => " inicio " - " fim)
                                 {:status 200
                                  :body (consultaExtrato inicio fim)}))
-  (GET "/saldo" [] {:headers {"Content-Type" "application/json; charset=utf-8"}
-                    :body (json/generate-string "Obter saldo da carteira")})
+  (GET "/saldo" [] (consultaSaldo))
 
   (GET "/testeCompra" [] (compraAcao "ibm" 20 "2025-12-03"))
 
