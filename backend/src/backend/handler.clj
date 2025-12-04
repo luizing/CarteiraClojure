@@ -32,7 +32,8 @@
 
 (defn criarAcao [acao qtd]
   (if (isAcao? acao) (println "erro: acao ja existe")
-      (swap! carteira assoc acao qtd)))
+      (swap! carteira assoc acao qtd)) 
+  )
 
 (defn salvarCompra [acao qtd]
   (if (isAcao? acao)
@@ -41,9 +42,27 @@
       {:acao acao
        :quantidade qtd}
       )
-    (criarAcao acao qtd)
+    (criarAcao acao qtd) 
     )
   )
+
+(defn salvarVenda [acao qtd]
+  (cond
+    (not (isAcao? acao))
+    {:erro "Ação não existe na carteira"}
+
+    (< (get @carteira acao) qtd)
+    {:erro "Quantidade insuficiente para venda"}
+
+    (= (get @carteira acao) qtd)
+    (do
+      (swap! carteira dissoc acao)
+      {:acao acao :quantidade 0})
+
+    :else
+    (do
+      (swap! carteira update acao - qtd)
+      {:acao acao :quantidade (get @carteira acao)})))
 
 
 
@@ -168,6 +187,7 @@
                    :preco-unitario precoUnitario
                    :total (format "%.2f" total)}]
 
+        (salvarVenda (:acao corpo) (:quantidade corpo))
         (addRegistro corpo)
         (retornaJson corpo)))))
 
