@@ -74,16 +74,16 @@
 
 
 ;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
-;;(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
-(def APIKEY "demo")
+(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
+;;(def APIKEY "demo")
 
 (defn urlCreator [symbol function]
   (let [baseUrl "https://www.alphavantage.co/query?function="
         conectionF&S "&symbol="
         symbol (clojure.string/upper-case symbol)
         conectionS&A "&apikey="
-        ;;sufixo ".SAO"
-        sufixo ""
+        sufixo ".SAO"
+        ;;sufixo ""
         requestLink (str baseUrl function conectionF&S symbol sufixo conectionS&A APIKEY)]
     requestLink))
 
@@ -101,13 +101,16 @@
         open (get quote (keyword "02. open"))
         high (get quote (keyword "03. high"))
         low (get quote (keyword "04. low"))
-        price (get quote (keyword "05. price"))]
+        price (get quote (keyword "05. price"))
+        close (get quote (keyword "08. previous close"))
+        ]
 
     {:acao      symb
      :abertura  open
      :alta      high
      :baixa     low
-     :preco     price}))
+     :preco     price
+     :close close}))
 
 (defn consultaAcaoPassado [symbol data]
   (try

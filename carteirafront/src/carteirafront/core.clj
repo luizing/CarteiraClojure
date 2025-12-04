@@ -29,6 +29,7 @@
   (println "Alta:"     (nth vetor 2))
   (println "Baixa:"    (nth vetor 3))
   (println "Preco:"    (nth vetor 4))
+  (println "Fechamento:" (nth vetor 5))
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+\n"))
 
 (defn imprimirCompra [vetor]
@@ -58,8 +59,9 @@
         abertura (get-in response [:body :abertura])
         alta (get-in response [:body :alta])
         baixa (get-in response [:body :baixa])
-        preco (get-in response [:body :preco])]
-    [acao abertura alta baixa preco]))
+        preco (get-in response [:body :preco])
+        fechamento (get-in response [:body :close])]
+    [acao abertura alta baixa preco fechamento]))
 
 
 (defn comprarAcao [symbol qtd data]
