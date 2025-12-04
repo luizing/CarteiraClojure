@@ -163,14 +163,15 @@
   (println "=+= Para qual periodo deseja verificar o extrato?: =+=")
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
   
-  (println "Digite o inicio: ")
-  (let [inicio (read)
-        _ (println "Digite o fim: ")
-        final (read)]
-    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "Digite a data de inicio (yyyy-mm-dd): ")
+  (let [___ (read-line)
+        inicio (read-line) 
+        _ (println "Digite a data de fim (yyyy-mm-dd): ") 
+        fim (read-line)]
+    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+") 
     (println
      (processaExtrato
-      (exibirExtrato inicio final)))))
+      (exibirExtrato inicio fim)))))
 
 
 (defn menu []
