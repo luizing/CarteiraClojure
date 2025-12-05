@@ -217,7 +217,8 @@
   (println "2 - Comprar acao")
   (println "3 - Vender acao")
   (println "4 - Exibir extrato")
-  (println "5 - Exibir saldo\n")
+  (println "5 - Exibir extrato por periodo")
+  (println "6 - Exibir saldo\n")
 
   (let
    [opcao (read)]
@@ -225,8 +226,10 @@
       (= opcao 1) (consultarAcao-MENU)
       (= opcao 2) (comprarAcao-MENU)
       (= opcao 3) (venderAcao-MENU)
-      (= opcao 4) (exibirExtrato-MENU)
-      (= opcao 5) (imprimirSaldo
+      (= opcao 4) (imprimirExtrato
+                   (requestExtrato "2020-01-01" "2030-12-31"))
+      (= opcao 5) (exibirExtrato-MENU)
+      (= opcao 6) (imprimirSaldo
                    (parseSaldo
                     (requestSaldo)))
       :else (println "..."))

@@ -59,26 +59,17 @@
       (swap! carteira update acao - qtd)
       {:acao acao :quantidade (get @carteira acao)})))
 
-
-
-
-
-
-
-
-
-
 ;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
-;;(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
-(def APIKEY "demo")
+(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
+;;(def APIKEY "demo")
 
 (defn urlCreator [symbol function]
   (let [baseUrl "https://www.alphavantage.co/query?function="
         conectionF&S "&symbol="
         symbol (clojure.string/upper-case symbol)
         conectionS&A "&apikey="
-        ;;sufixo ".SAO"
-        sufixo ""
+        sufixo ".SAO"
+        ;;sufixo ""
         requestLink (str baseUrl function conectionF&S symbol sufixo conectionS&A APIKEY)]
     requestLink))
 
@@ -229,12 +220,6 @@
                                     {:status 200
                                      :body (consultaExtrato inicio fim)}))
       (GET "/saldo" [] (consultaSaldo))
-
-      (GET "/testeCompra" [] (compraAcao "ibm" 20 "2025-12-03"))
-
-      (GET "/testeCarteira" [] (json/generate-string @carteira))
-
-      (GET "/testeExtrato" [] (consultaExtrato "2025-12-01" "2025-12-03"))
 
       (route/not-found "Not Found"))
 
