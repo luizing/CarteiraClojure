@@ -6,17 +6,71 @@
             [ring.middleware.json :refer [wrap-json-body]]
             [clj-http.client :as http-client]))
 
-;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
-;;(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
-(def APIKEY "demo")
 
-(defn urlCreator [symbol]
-  (let [baseUrl "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="
+;;Banco de dados
+
+(def registro (atom ()))
+
+(def carteira (atom {}))
+
+
+(defn addRegistro [operacao]
+  (let [data (:data operacao)
+        tipo (:operacao operacao)
+        acao (:acao operacao)
+        quantidade (:quantidade operacao)
+        preco (:preco-unitario operacao)]
+    (swap! registro conj {:data data
+                          :tipo tipo
+                          :acao acao
+                          :quantidade quantidade
+                          :preco preco})))
+
+(defn filtrarDatas [inicio fim]
+  (filter
+   #(let [data (:data %)]
+      (and (not (neg? (compare data inicio)))
+           (not (pos? (compare data fim)))))
+   @registro))
+
+(defn isAcao? [acao]
+  (contains? @carteira acao))
+
+(defn criarAcao [acao qtd]
+  (if (isAcao? acao) (println "erro: acao ja existe")
+      (swap! carteira assoc acao qtd)))
+
+(defn salvarCompra [acao qtd]
+  (if (isAcao? acao)
+    (do
+      (swap! carteira update acao + qtd)
+      {:acao acao
+       :quantidade qtd})
+    (criarAcao acao qtd)))
+
+(defn vendaValida? [acao qtd]
+  (not (or (not (isAcao? acao)) (< (get @carteira acao) qtd))))
+
+(defn salvarVenda [acao qtd]
+  (if (= (get @carteira acao) qtd)
+    (do (swap! carteira dissoc acao)
+        {:acao acao :quantidade 0})
+    (do
+      (swap! carteira update acao - qtd)
+      {:acao acao :quantidade (get @carteira acao)})))
+
+;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
+(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
+;;(def APIKEY "demo")
+
+(defn urlCreator [symbol function]
+  (let [baseUrl "https://www.alphavantage.co/query?function="
+        conectionF&S "&symbol="
         symbol (clojure.string/upper-case symbol)
-        linkConection "&apikey="
-        ;;sufixo ".SAO"
-        sufixo ""
-        requestLink (str baseUrl symbol sufixo linkConection APIKEY)]
+        conectionS&A "&apikey="
+        sufixo ".SAO"
+        ;;sufixo ""
+        requestLink (str baseUrl function conectionF&S symbol sufixo conectionS&A APIKEY)]
     requestLink))
 
 (defn retornaJson [map]
@@ -24,68 +78,152 @@
 
 
 (defn consultaAcao [symbol]
-  (let [url (urlCreator symbol)
+  (let [url (urlCreator symbol "GLOBAL_QUOTE")
         response (http-client/get url {:as :json})
 
-        quote (get-in response [:body (keyword "Global Quote")])
+        quote (get-in response [:body (keyword "Global Quote")])]
 
-        symb (get quote (keyword "01. symbol"))
-        open (get quote (keyword "02. open"))
-        high (get quote (keyword "03. high"))
-        low (get quote (keyword "04. low"))
-        price (get quote (keyword "05. price"))]
+    (if (some? quote)
+      (let [symb (get quote (keyword "01. symbol"))
+            open (get quote (keyword "02. open"))
+            high (get quote (keyword "03. high"))
+            low (get quote (keyword "04. low"))
+            price (get quote (keyword "05. price"))
+            close (get quote (keyword "08. previous close"))]
+        {:acao      symb
+         :abertura  open
+         :alta      high
+         :baixa     low
+         :preco     price
+         :close close})
+      {:status "erro"
+       :mensagem "Erro ao consultar acao"})))
 
-    {:acao      symb
-     :abertura  open
-     :alta      high
-     :baixa     low
-     :preco     price}))
 
-(defn compraAcao [symbol qtd]
-  (let [precoUnitario (Double/parseDouble (:preco (consultaAcao symbol)))
-        corpo {:acao symbol
-               :quantidade qtd
-               :preco-unitario precoUnitario
-               :total (format "%.2f" (* qtd (double precoUnitario)))}]
-    (retornaJson corpo)))
 
-(defn vendeAcao [symbol qtd]
-  (let [precoUnitario (Double/parseDouble (:preco (consultaAcao symbol)))
-        corpo {:acao symbol
-               :quantidade qtd
-               :preco-unitario precoUnitario
-               :total (format "%.2f" (* qtd (double precoUnitario)))}]
-    (retornaJson corpo)))
 
-(defn consultaExtrato [inicio fim]
-  (retornaJson (str "Extrato do periodo de " inicio " a " fim ":\n"
-       "100 PETR4 31$ 200 6200"))
-  )
 
-  (defroutes app-routes
-    (GET "/" [] "Carteira de Ações - Programação Funcional")
 
-    (GET "/acao/:symbol" [symbol] (retornaJson (consultaAcao symbol)))
+    (defn consultaAcaoPassado [symbol data]
+      (try
+        (let [url (urlCreator symbol "TIME_SERIES_DAILY")
 
-    (POST "/compra" requisicao (let [{:keys [symbol quantidade]} (:body requisicao)]
-                                 (println "Compra => " symbol " " quantidade)
-                                 {:status 200
-                                  :body (compraAcao symbol quantidade)}))
+              response (http-client/get url {:as :json})
+              series (get-in response [:body (keyword "Time Series (Daily)")])
+              pastDate (get series (keyword data))
 
-    (POST "/vende" requisicao (let [{:keys [symbol quantidade]} (:body requisicao)]
-                                (println "Venda => " symbol " " quantidade)
-                                {:status 200
-                                 :body (vendeAcao symbol quantidade)}))
+              open (get pastDate (keyword "1. open"))
+              high (get pastDate (keyword "2. high"))
+              low (get pastDate (keyword "3. low"))
+              close (get pastDate (keyword "4. close"))
+              volume (get pastDate (keyword "5. volume"))]
 
-    (POST "/extrato" requisicao (let [{:keys [inicio fim]} (:body requisicao)]
-                                  (println "Extrato => " inicio " - " fim)
+          {:symbol symbol
+           :data data
+           :open open
+           :high high
+           :low low
+           :close close
+           :volume volume})
+        (catch Exception e
+          (println "Erro ao consultar API externa:" (.getMessage e))
+          nil)))
+
+    (defn compraAcao [symbol qtd data]
+      (let [historico (consultaAcaoPassado symbol data)
+            precoString (:close historico)]
+
+        (if (or (not (int? qtd))
+                (neg? qtd)
+                (nil? historico)
+                (nil? precoString)
+                (nil? symbol)
+                (nil? qtd)
+                (nil? data))
+
+          (retornaJson
+           {:status "erro"
+            :mensagem "Dados invalidos ou data sem historico."})
+
+          (let [precoUnitario (Double/parseDouble precoString)
+                total (* qtd precoUnitario)
+
+                corpo {:data data
+                       :operacao "compra"
+                       :acao symbol
+                       :quantidade qtd
+                       :preco-unitario precoUnitario
+                       :total (format "%.2f" total)}]
+
+            (salvarCompra (:acao corpo) (:quantidade corpo))
+            (addRegistro corpo)
+            (retornaJson corpo)))))
+
+
+    (defn vendeAcao [symbol qtd data]
+      (let [historico (consultaAcaoPassado symbol data)
+            precoString (:close historico)]
+
+        (if (or (not (int? qtd))
+                (neg? qtd)
+                (nil? historico)
+                (nil? precoString)
+                (nil? symbol)
+                (nil? qtd)
+                (nil? data))
+
+          (retornaJson
+           {:status "erro"
+            :mensagem "Dados invalidos ou data sem historico."})
+
+          (let [precoUnitario (Double/parseDouble precoString)
+                total (* qtd precoUnitario)
+
+                corpo {:data data
+                       :operacao "venda"
+                       :acao symbol
+                       :quantidade qtd
+                       :preco-unitario precoUnitario
+                       :total (format "%.2f" total)}]
+
+            (if (vendaValida? (:acao corpo) (:quantidade corpo))
+              (do (salvarVenda (:acao corpo) (:quantidade corpo))
+                  (addRegistro corpo)
+                  (retornaJson corpo))
+              (retornaJson {:status "erro"
+                            :mensagem "Quantidade invalida para venda"}))))))
+
+
+    (defn consultaExtrato [inicio fim]
+      (retornaJson (filtrarDatas inicio fim)))
+
+    (defn consultaSaldo []
+      (retornaJson @carteira))
+
+    (defroutes app-routes
+      (GET "/" [] "Carteira de Ações - Programação Funcional")
+
+      (GET "/acao/:symbol" [symbol] (retornaJson (consultaAcao symbol)))
+
+      (POST "/compra" requisicao (let [{:keys [symbol quantidade data]} (:body requisicao)]
+                                   (println "Compra => " symbol " " quantidade " em " data)
+                                   {:status 200
+                                    :body (compraAcao symbol quantidade data)}))
+
+      (POST "/vende" requisicao (let [{:keys [symbol quantidade data]} (:body requisicao)]
+                                  (println "Venda => " symbol " " quantidade " em " data)
                                   {:status 200
-                                   :body (consultaExtrato inicio fim)}))
-    (GET "/saldo" [] {:headers {"Content-Type" "application/json; charset=utf-8"}
-                      :body (json/generate-string "Obter saldo da carteira")})
-    (route/not-found "Not Found"))
+                                   :body (vendeAcao symbol quantidade data)}))
 
-  (def app
-    (-> app-routes
-        (wrap-json-body {:keywords? true})
-        (wrap-defaults api-defaults)))
+      (POST "/extrato" requisicao (let [{:keys [inicio fim]} (:body requisicao)]
+                                    (println "Extrato => " inicio " - " fim)
+                                    {:status 200
+                                     :body (consultaExtrato inicio fim)}))
+      (GET "/saldo" [] (consultaSaldo))
+
+      (route/not-found "Not Found"))
+
+    (def app
+      (-> app-routes
+          (wrap-json-body {:keywords? true})
+          (wrap-defaults api-defaults)))
