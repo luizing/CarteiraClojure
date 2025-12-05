@@ -48,3 +48,5 @@ resources/public/js/compiled/
 .shadow-cljs/
 .clj-kondo/
 .lsp/
+
+.env

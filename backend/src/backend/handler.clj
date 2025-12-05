@@ -1,11 +1,17 @@
 (ns backend.handler
-  (:require [compojure.core :refer :all]
+  (:require [compojure.core :refer :all] 
             [compojure.route :as route]
             [cheshire.core :as json]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [ring.middleware.json :refer [wrap-json-body]]
-            [clj-http.client :as http-client]))
+            [clj-http.client :as http-client]
+            [backend.env :refer [carregar-env]]
+            ))
 
+(def config (carregar-env "../.env"))
+
+(def APIKEY (:ALPHAVANTAGE_API_KEY config))
+(def SUFIXO (:SUFIXO config))
 
 ;;Banco de dados
 
@@ -59,18 +65,13 @@
       (swap! carteira update acao - qtd)
       {:acao acao :quantidade (get @carteira acao)})))
 
-;;https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
-(def APIKEY "625F6E1PEVJA2EUT") ;;Colocar como .env
-;;(def APIKEY "demo")
 
 (defn urlCreator [symbol function]
   (let [baseUrl "https://www.alphavantage.co/query?function="
         conectionF&S "&symbol="
         symbol (clojure.string/upper-case symbol)
         conectionS&A "&apikey="
-        sufixo ".SAO"
-        ;;sufixo ""
-        requestLink (str baseUrl function conectionF&S symbol sufixo conectionS&A APIKEY)]
+        requestLink (str baseUrl function conectionF&S symbol SUFIXO conectionS&A APIKEY)]
     requestLink))
 
 (defn retornaJson [map]

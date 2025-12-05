@@ -1,13 +1,17 @@
 (ns carteirafront.core
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as http-client])
+   [clj-http.client :as http-client]
+   [carteirafront.env :refer [carregar-env]])
   (:gen-class))
 
 
 
 ;;Variaveis de ambiente
-(def APIBASEURL "http://localhost:3000")
+
+(def config (carregar-env))
+
+(def APIBASEURL (:BACKEND_URL config))
 
 ;;Common
 (defn respostaValida? [response]
