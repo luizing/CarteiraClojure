@@ -14,6 +14,12 @@
 (def APIBASEURL (:BACKEND_URL config))
 
 ;;Common
+(defn ler-int []
+  (try
+    (Integer/parseInt (read-line))
+    (catch Exception _
+      nil)))
+
 (defn respostaValida? [response]
   (and
    (some? response)
@@ -167,7 +173,7 @@
   (println "Digite a acao que deseja comprar: ")
   (let [acao (read)
         _ (println "Digite a quantidade: ")
-        qtd (read)
+        qtd (ler-int)
         __ (println "Digite a data (yyyy-mm-dd): ")
         ___ (read-line)
         data (read-line)]
@@ -185,7 +191,8 @@
 
   (let [acao (read)
         _ (println "Digite a quantidade: ")
-        qtd (read)
+        ___ (read-line)
+        qtd (ler-int)
         __ (println "Digite a data (yyyy-mm-dd): ")
         ___ (read-line)
         data (read-line)]
