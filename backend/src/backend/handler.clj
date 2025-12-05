@@ -53,23 +53,17 @@
     )
   )
 
+(defn vendaValida? [acao qtd]
+  (not (or (not (isAcao? acao)) (< (get @carteira acao) qtd)))
+  )
+
 (defn salvarVenda [acao qtd]
-  (cond
-    (not (isAcao? acao))
-    {:erro "Ação não existe na carteira"}
-
-    (< (get @carteira acao) qtd)
-    {:erro "Quantidade insuficiente para venda"}
-
-    (= (get @carteira acao) qtd)
-    (do
-      (swap! carteira dissoc acao)
-      {:acao acao :quantidade 0})
-
-    :else
-    (do
-      (swap! carteira update acao - qtd)
-      {:acao acao :quantidade (get @carteira acao)})))
+  (if (= (get @carteira acao) qtd)
+    (do (swap! carteira dissoc acao)
+        {:acao acao :quantidade 0})
+  (do
+    (swap! carteira update acao - qtd)
+    {:acao acao :quantidade (get @carteira acao)})))
 
 
 
@@ -197,9 +191,12 @@
                    :preco-unitario precoUnitario
                    :total (format "%.2f" total)}]
 
-        (salvarVenda (:acao corpo) (:quantidade corpo))
-        (addRegistro corpo)
-        (retornaJson corpo)))))
+        (if (vendaValida? (:acao corpo) (:quantidade corpo))
+          (do (salvarVenda (:acao corpo) (:quantidade corpo))
+              (addRegistro corpo)
+              (retornaJson corpo))
+          (retornaJson {:status "erro"
+                        :mensagem "quantidade invalida"}))))))
 
 
 (defn consultaExtrato [inicio fim]
