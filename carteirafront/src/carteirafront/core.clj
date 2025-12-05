@@ -14,6 +14,11 @@
 (def APIBASEURL (:BACKEND_URL config))
 
 ;;Common
+(defn lerInt []
+  (let [valor (read)]
+    (if (int? valor)
+      valor
+      -100)))
 
 (defn respostaValida? [response]
   (and
@@ -168,7 +173,7 @@
   (println "Digite a acao que deseja comprar: ")
   (let [acao (read)
         _ (println "Digite a quantidade: ")
-        qtd (read)
+        qtd (lerInt)
         __ (println "Digite a data (yyyy-mm-dd): ")
         ___ (read-line)
         data (read-line)]
@@ -187,7 +192,7 @@
   (let [acao (read)
         _ (println "Digite a quantidade: ")
         ___ (read-line)
-        qtd (read)
+        qtd (lerInt)
         __ (println "Digite a data (yyyy-mm-dd): ")
         ___ (read-line)
         data (read-line)]
@@ -196,7 +201,7 @@
     (let [resp (requestVendeAcao acao qtd data)]
       (if (respostaValida? resp)
         (imprimirVenda (parseTransacao resp))
-        (println "Erro ao realizar venda:" (:body resp))))))
+        (imprimirErro (parseErro resp))))))
 
 
 (defn exibirExtrato-MENU []
