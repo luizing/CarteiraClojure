@@ -10,8 +10,6 @@
 (def APIBASEURL "http://localhost:3000")
 
 ;;Common
-
-
 (defn respostaValida? [response]
   (and
    (some? response)
@@ -24,15 +22,20 @@
    (not (contains? (:body response) :mensagem))
    (not= "erro" (:status (:body response)))))
 
+(defn imprimirErro [erro]
+  (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
+  (println "Operacao nao pode ser concluida: ")
+  (println "- " erro))
+
 (defn imprimirExtrato [response]
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
   (println
    (format "%-12s %-10s %-10s %-12s %-12s"
            "DATA"
            "TIPO"
-           "AÇÃO"
+           "ACAO"
            "QTD"
-           "PREÇO"))
+           "PRECO"))
 
   (let [extrato (:body response)]
     (doseq [{:keys [data tipo acao quantidade preco]} extrato]
@@ -136,6 +139,9 @@
                      :body (json/generate-string {:inicio inicio
                                                   :fim fim})}))
 
+(defn parseErro [response]
+  (get-in response [:body :mensagem]))
+
 
 
 ;;Menus
@@ -148,7 +154,7 @@
     (let [resp (requestConsultaAcao symbol)]
       (if (respostaValida? resp)
         (imprimirConsulta (parseConsultaAcao resp))
-        (println "Erro ao realizar consulta:" (:body resp))))))
+        (imprimirErro (parseErro resp))))))
 
 
 
@@ -166,7 +172,7 @@
     (let [resp (requestCompraAcao acao qtd data)]
       (if (respostaValida? resp)
         (imprimirCompra (parseTransacao resp))
-        (println "Erro ao realizar compra:" (:body resp))))))
+        (imprimirErro (parseErro resp))))))
 
 
 (defn venderAcao-MENU []

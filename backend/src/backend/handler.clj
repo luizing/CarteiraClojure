@@ -142,7 +142,9 @@
       (let [historico (consultaAcaoPassado symbol data)
             precoString (:close historico)]
 
-        (if (or (nil? historico)
+        (if (or (not (int? qtd))
+                (neg? qtd)
+                (nil? historico)
                 (nil? precoString)
                 (nil? symbol)
                 (nil? qtd)
@@ -150,7 +152,7 @@
 
           (retornaJson
            {:status "erro"
-            :mensagem "Não foi possível realizar a compra. Dados inválidos ou data sem histórico."})
+            :mensagem "Dados invalidos ou data sem historico."})
 
           (let [precoUnitario (Double/parseDouble precoString)
                 total (* qtd precoUnitario)
@@ -171,7 +173,9 @@
       (let [historico (consultaAcaoPassado symbol data)
             precoString (:close historico)]
 
-        (if (or (nil? historico)
+        (if (or (not (int? qtd))
+                (neg? qtd)
+                (nil? historico)
                 (nil? precoString)
                 (nil? symbol)
                 (nil? qtd)
@@ -179,7 +183,7 @@
 
           (retornaJson
            {:status "erro"
-            :mensagem "Não foi possível realizar a venda. Dados inválidos ou data sem histórico."})
+            :mensagem "Dados invalidos ou data sem historico."})
 
           (let [precoUnitario (Double/parseDouble precoString)
                 total (* qtd precoUnitario)
@@ -196,7 +200,7 @@
                   (addRegistro corpo)
                   (retornaJson corpo))
               (retornaJson {:status "erro"
-                            :mensagem "quantidade invalida"}))))))
+                            :mensagem "Quantidade invalida para venda"}))))))
 
 
     (defn consultaExtrato [inicio fim]
