@@ -10,6 +10,8 @@
 (def APIBASEURL "http://localhost:3000")
 
 ;;Common
+
+
 (defn respostaValida? [response]
   (and
    (some? response)
@@ -141,9 +143,14 @@
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+")
   (println "=+= Digite a acao que deseja consultar: =+=")
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
-  (let [symbol (read)
-        vetorRetorno (parseConsultaAcao (requestConsultaAcao symbol))]
-    (imprimirConsulta vetorRetorno)))
+  (let [symbol (read)]
+    (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+\n")
+    (let [resp (requestConsultaAcao symbol)]
+      (if (respostaValida? resp)
+        (imprimirConsulta (parseConsultaAcao resp))
+        (println "Erro ao realizar consulta:" (:body resp))))))
+
+
 
 (defn comprarAcao-MENU []
   (println "+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=")
